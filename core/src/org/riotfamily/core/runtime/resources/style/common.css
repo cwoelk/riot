@@ -44,18 +44,22 @@ td {
 	right: 37px;
 	background-position: top right;
 	background-repeat: no-repeat;
-	
+
 }
 #content {
 	clear: both;
 	position: relative;
 	margin: 10px 20px 0 30px;
 }
+body.embedded #content {
+	margin: 0 0 0 30px;
+}
 #footer {
 	background: #575757 url(images/footer/bg.gif) repeat-x;
-	color: #cacaca; 
+	color: #cacaca;
 	height: 50px;
 	margin-top: -50px;
+	clear: both;
 }
 #footer-content {
 	height: 38px;
@@ -63,7 +67,7 @@ td {
 	padding: 18px 0 0 30px;
 }
 #footer a {
-	color: #cacaca; 
+	color: #cacaca;
 	text-decoration: none;
 }
 #footer a.logout {
@@ -81,6 +85,9 @@ td {
 .main {
 	padding: 0 300px 25px 0;
 	margin-bottom: 50px;
+}
+body.fullwidth .main {
+	padding: 0 0 25px 0;
 }
 .extra {
 	width: 280px;
@@ -179,7 +186,7 @@ span.messageCode {
 #path .screen b b {
 	background-repeat: repeat-x;
 	background-image: url(images/path/center.gif);
-	padding-left: 4px; 
+	padding-left: 4px;
 	padding-right: 23px;
 }
 #path a.screen:hover b b {

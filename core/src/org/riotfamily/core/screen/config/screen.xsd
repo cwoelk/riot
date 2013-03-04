@@ -13,6 +13,8 @@
 		schemaLocation="http://www.springframework.org/schema/tool/spring-tool-3.0.xsd" />
 
 	<xsd:element name="group" type="groupType" />
+
+	<xsd:element name="multi-list" type="multiListType" />
 	
 	<xsd:element name="list" type="listType" />
 	
@@ -22,6 +24,7 @@
 		<xsd:choice>
 			<xsd:element ref="group" />
 			<xsd:element ref="list" />
+			<xsd:element ref="multi-list" />
 			<xsd:element ref="form" />
 			<xsd:any namespace="##other" processContents="strict" />
 		</xsd:choice>
@@ -115,6 +118,17 @@
 				<xsd:sequence>
 					<xsd:group ref="screenElements" maxOccurs="unbounded" />
 					<xsd:element name="screenlets" type="screenletsType" minOccurs="0" />
+				</xsd:sequence>
+				<xsd:attribute name="vanity-title" type="xsd:string" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="multiListType">
+		<xsd:complexContent>
+			<xsd:extension base="screenType">
+				<xsd:sequence>
+					<xsd:element ref="list" minOccurs="2" maxOccurs="2" />
 				</xsd:sequence>
 				<xsd:attribute name="vanity-title" type="xsd:string" />
 			</xsd:extension>

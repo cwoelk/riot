@@ -1,3 +1,4 @@
+<#assign embedded = ((request.getParameter("embedded")!"false") == "true") />
 <@template.root>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -6,10 +7,10 @@
 	<@riot.scripts srcs=[
 		"prototype/prototype.js",
 		"scriptaculous/effects.js",
-		"riot/util.js", 
-		"riot/resources.js", 
+		"riot/util.js",
+		"riot/resources.js",
 		"riot/window/dialog.js",
-		"riot/notification/notification.js"] 
+		"riot/notification/notification.js"]
 	/>
 	<@riot.stylesheets hrefs=[
 		"riot/window/dialog.css",
@@ -17,25 +18,27 @@
 		"style/common.css"
 		] + (customStyleSheets![]) + (template.vars.stylesheets![])
 	/>
-	
+
 	<script language="JavaScript" type="text/javascript">
 		riot.Resources.setBasePath('${c.url(runtime.resourcePath)}');
 		riot.contextPath = '${request.contextPath}';
 	</script>
-	
+
 </head>
-<body class="${template.vars.bodyClass!"screen"}">
+<body class="${template.vars.bodyClass!"screen"}<#if embedded> embedded</#if>">
 	<div id="page">
-		<div id="header">
-			<@template.block name="header">
-				<@renderPath path!context.path />	
-			</@template.block>
-			<div id="logo"></div>
-		</div>
+		<#if !embedded>
+			<div id="header">
+				<@template.block name="header">
+					<@renderPath path!context.path />
+				</@template.block>
+				<div id="logo"></div>
+			</div>
+		</#if>
 		<div id="content">
 			<@template.block name="content">
 				<div class="main">
-					<@template.block name="main" />	
+					<@template.block name="main" />
 				</div>
 				<div id="extra" class="extra">
 					<@template.block name="extra">
@@ -45,26 +48,28 @@
 			</@template.block>
 		</div>
 	</div>
-	<div id="footer">
-		<div id="footer-content">
-			<a href="${c.urlForHandler('logoutController')}" class="logout"><@c.message "logout">Logout</@c.message></a> | <a href="${c.urlForHandler('changePasswordController')}" id="changePassword"><@c.message "changePassword">Change Password</@c.message></a>
+	<#if !embedded>
+		<div id="footer">
+			<div id="footer-content">
+				<a href="${c.urlForHandler('logoutController')}" class="logout"><@c.message "logout">Logout</@c.message></a> | <a href="${c.urlForHandler('changePasswordController')}" id="changePassword"><@c.message "changePassword">Change Password</@c.message></a>
+			</div>
 		</div>
-	</div>
-	<script>
-		$('changePassword').observe('click', function (ev) {
-			ev.stop();
-			new riot.window.Dialog({
-				title: '<@c.message "changePassword">Change Password</@c.message>', 
-				url: '${c.resolve(riot.resource("/changePassword"))}',
-				minHeight : 255,
-				closeButton: true,
-				autoSize: true
-			});
-		})
-		new PeriodicalExecuter(function() {
-			new Ajax.Request('${c.resolve(riot.resource("/ping"))}');
-		}, 180);
-	</script>
+		<script>
+			$('changePassword').observe('click', function (ev) {
+				ev.stop();
+				new riot.window.Dialog({
+					title: '<@c.message "changePassword">Change Password</@c.message>',
+					url: '${c.resolve(riot.resource("/changePassword"))}',
+					minHeight : 255,
+					closeButton: true,
+					autoSize: true
+				});
+			})
+			new PeriodicalExecuter(function() {
+				new Ajax.Request('${c.resolve(riot.resource("/ping"))}');
+			}, 180);
+		</script>
+	</#if>
 	<#if notification??>
 		<script language="JavaScript" type="text/javascript">
 			riot.notification.show(${FormatUtils.toJSON(notification)});

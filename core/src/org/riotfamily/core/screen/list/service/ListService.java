@@ -142,7 +142,7 @@ public class ListService {
 		return new ListModelBuilder(this, key, request)
 				.filter(filter).buildModel();
 	}
-	
+
 	@RemoteMethod
 	public List<CommandButton> getFormCommands(String key, ListItem item, 
 			HttpServletRequest request) {
@@ -167,7 +167,14 @@ public class ListService {
 		return new ChooserCommandHandler(this, key, request)
 				.execCommand(commandId, items);
 	}
-	
+
+	@RemoteMethod
+	public CommandResult gotoItemScreenUrl(String key, List<ListItem> items, boolean embedded,
+			HttpServletRequest request, HttpServletResponse response) {
+
+		return new CommandContextHandler(this, key, request).gotoItemScreenUrl(items, handlerUrlResolver, embedded);
+	}
+
 	@RemoteMethod
 	public CommandResult handleInput(String key, 
 			String formKey, List<ListItem> items,

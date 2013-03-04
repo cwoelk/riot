@@ -45,6 +45,19 @@ div#list {
 	position: relative;
 }
 
+#list.controlList,
+#mainList {
+	float: left;
+}
+#list.controlList {
+	width: 25%;
+	margin-bottom: 25px;
+}
+#mainList {
+	width: 75%;
+	margin-bottom: 25px;
+}
+
 #list table {
 	width: 99%;
 	border-collapse: collapse;

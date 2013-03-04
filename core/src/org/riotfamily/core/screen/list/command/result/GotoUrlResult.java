@@ -24,7 +24,7 @@ public class GotoUrlResult implements CommandResult {
 
 	private String url;
 	
-	private String target = "self";
+	private String target = "top";
 	
 	private boolean replace;
 	

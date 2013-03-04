@@ -21,6 +21,7 @@ import org.riotfamily.common.beans.namespace.PropertyValueDecorator;
 import org.riotfamily.core.screen.GroupScreen;
 import org.riotfamily.core.screen.form.FormScreen;
 import org.riotfamily.core.screen.list.ColumnConfig;
+import org.riotfamily.core.screen.list.MultiTreeListScreen;
 import org.riotfamily.core.screen.list.TreeListScreen;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 
@@ -52,7 +53,12 @@ public class ScreenNamespaceHandler extends GenericNamespaceHandlerSupport {
 				.register("commands", new ListDecorator())
 				.register("screenlets", new ListDecorator())
 				.setDefault(new PropertyValueDecorator("itemScreen")));
-		
+
+		register("multi-list", MultiTreeListScreen.class)
+				.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR)
+				.setDecorator(new ChildDecorator()
+				.setDefault(new ListItemDecorator("listScreens")));
+
 		register("column", ColumnConfig.class).setDecorator(
 				new PropertyDecorator("renderer"));
 	}

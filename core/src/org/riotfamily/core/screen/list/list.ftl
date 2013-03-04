@@ -1,13 +1,13 @@
 <@template.set stylesheets=[
-	"style/list.css", 
+	"style/list.css",
 	"style/list-custom.css",
-	"style/form.css", 
+	"style/form.css",
 	"style/form-custom.css",
-	"style/command.css", 
+	"style/command.css",
 	"style/command-custom.css"
 ] />
 <@template.extend file="../screen.ftl">
-	
+
 	<@template.block name="main">
 		<#if chooser??>
 			<@template.set bodyClass="chooser" />
@@ -20,7 +20,7 @@
 		<div id="list"></div>
 	</@template.block>
 
-	<@template.block name="extra">	
+	<@template.block name="extra">
 		<div class="box command-box">
 			<div class="box-title">
 				<span class="label"><@c.message "label.commands">Commands</@c.message></span>
@@ -38,9 +38,9 @@
 				</div>
 			</div>
 		</#if>
-				
+
 		<script type="text/javascript" language="JavaScript">
-			var list = new RiotList('${listState.key}');
+			var list = new RiotList('${listState.key}', '${listState.parentId!}'<#if embedded>, true</#if>);
 			list.render('list', 'commands', <#if context.objectId??>'${context.objectId}'<#else>null</#if><#if listState.filterForm??>, 'filterForm'</#if>);
 		</script>
 	</@template.block>

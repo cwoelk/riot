@@ -21,7 +21,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.riotfamily.common.i18n.MessageResolver;
 import org.riotfamily.common.util.Generics;
+import org.riotfamily.common.web.mvc.mapping.HandlerUrlResolver;
+import org.riotfamily.common.web.support.ServletUtils;
 import org.riotfamily.core.dao.ListParams;
+import org.riotfamily.core.screen.DefaultScreenContext;
 import org.riotfamily.core.screen.ListScreen;
 import org.riotfamily.core.screen.ScreenContext;
 import org.riotfamily.core.screen.list.command.Command;
@@ -31,6 +34,7 @@ import org.riotfamily.core.screen.list.command.CommandResult;
 import org.riotfamily.core.screen.list.command.Selection;
 import org.riotfamily.core.screen.list.command.SelectionItem;
 import org.riotfamily.core.screen.list.command.impl.dialog.DialogCommand;
+import org.riotfamily.core.screen.list.command.result.GotoUrlResult;
 import org.riotfamily.core.screen.list.dto.CommandButton;
 import org.riotfamily.core.screen.list.dto.ListItem;
 import org.riotfamily.core.security.AccessController;
@@ -176,6 +180,22 @@ class CommandContextHandler extends ListServiceHandler
 		return result;
 	}
 	
+	public CommandResult gotoItemScreenUrl(List<ListItem> items, HandlerUrlResolver handlerUrlResolver, boolean embedded) {
+		GotoUrlResult result;
+		Selection selection = new Selection(dao, items);
+		ScreenContext parentContext = new DefaultScreenContext(screenContext.getScreen().getParentScreen(), request, null, null, false);
+		ScreenContext childContext = parentContext.createItemContext(selection.getSingleItem().getObject());
+		String url = handlerUrlResolver.getUrlForHandler(childContext.getScreen().getId(), childContext);
+		if (embedded) {
+			url = ServletUtils.addParameter(url, "embedded", "true");
+			result = new GotoUrlResult(request, url);
+			result.setTarget("self");
+		}
+		else {
+			result = new GotoUrlResult(request, url);
+		}
+		return result;
+	}
 	
 	// -----------------------------------------------------------------------
 	// Implementation of the CommandContext interface
