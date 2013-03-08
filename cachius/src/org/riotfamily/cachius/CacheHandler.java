@@ -2,7 +2,7 @@ package org.riotfamily.cachius;
 
 import java.io.Serializable;
 
-import org.riotfamily.cachius.persistence.DiskStore;
+import org.riotfamily.cachius.persistence.PersistenceStore;
 
 public interface CacheHandler {
 
@@ -26,7 +26,7 @@ public interface CacheHandler {
      */
 	public long getLastModified();
 	
-	public Serializable capture(DiskStore diskStore) throws Exception;
+	public Serializable capture(PersistenceStore persistenceStore) throws Exception;
 	
 	public void serve(Serializable data) throws Exception;
 	

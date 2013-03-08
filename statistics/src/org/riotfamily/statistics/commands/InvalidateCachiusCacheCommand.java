@@ -26,9 +26,11 @@ package org.riotfamily.statistics.commands;
 import org.riotfamily.core.screen.list.command.CommandContext;
 import org.riotfamily.core.screen.list.command.CommandResult;
 import org.riotfamily.core.screen.list.command.Selection;
+import org.riotfamily.core.screen.list.command.SelectionItem;
 import org.riotfamily.core.screen.list.command.impl.support.AbstractCommand;
 import org.riotfamily.core.screen.list.command.result.RefreshListResult;
-import org.riotfamily.statistics.dao.CachiusStatisticsDao;
+import org.riotfamily.statistics.dao.AbstractCachiusStatisticsDao;
+import org.riotfamily.statistics.domain.CachiusCacheRegionStatsItem;
 
 public class InvalidateCachiusCacheCommand extends AbstractCommand {
 	
@@ -37,11 +39,17 @@ public class InvalidateCachiusCacheCommand extends AbstractCommand {
 		return "bin_closed";
 	}
 	
-	public CommandResult execute(CommandContext context, Selection selection)
-			throws Exception {
+	public CommandResult execute(CommandContext context, Selection selection) throws Exception {
+		AbstractCachiusStatisticsDao dao = (AbstractCachiusStatisticsDao) context.getScreenContext().getDao();
 
-		CachiusStatisticsDao dao = (CachiusStatisticsDao) context.getScreenContext().getDao();
-		dao.getCachiusStatistics().invalidateAllItems();
+		if (selection.size() == 0) {
+			dao.getCachius().invalidateAllItems();
+		}
+		for (SelectionItem item : selection) {
+			CachiusCacheRegionStatsItem crs = (CachiusCacheRegionStatsItem) item.getObject();
+			dao.getCachius().invalidateRegion(crs.getName());
+		}
+		
 		return new RefreshListResult();		
 	}
 

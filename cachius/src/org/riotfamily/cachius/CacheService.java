@@ -10,51 +10,62 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.riotfamily.cachius.invalidation.DefaultItemInvalidator;
 import org.riotfamily.cachius.invalidation.ItemIndex;
 import org.riotfamily.cachius.invalidation.ItemInvalidator;
-import org.riotfamily.cachius.persistence.DiskStore;
-import org.riotfamily.cachius.persistence.SimpleDiskStore;
+import org.riotfamily.cachius.persistence.PersistenceStore;
+import org.riotfamily.cachius.persistence.file.SimpleDiskItemStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class CacheService {
-
+	
 	private Logger log = LoggerFactory.getLogger(CacheService.class);
-
+	
+	private boolean disableCache = false;
+	
 	private Map<String, Cache> caches = new HashMap<String, Cache>();
 	
-	private DiskStore diskStore;
+	private PersistenceStore persistenceStore;
 
 	private ItemIndex index = new ItemIndex();
 	
 	private ItemInvalidator invalidator = new DefaultItemInvalidator();
 	
-	private CachiusStatistics stats;
-
+	private Map<String, CachiusStatistics> statistics = new HashMap<String, CachiusStatistics>();
+	
 	public CacheService() {
-		this(new SimpleDiskStore());
+		this(new SimpleDiskItemStore());
 	}
 	
-	public CacheService(DiskStore diskStore) {
-		this(diskStore, Collections.singletonList(new Region("default")));
+	public CacheService(PersistenceStore persistenceStore) {
+		this(persistenceStore, Collections.singletonList(new Region("default")));
 	}
 	
-	public CacheService(DiskStore diskStore, List<Region> regions) {
-		this.diskStore = diskStore;
-		this.stats = new CachiusStatistics(this);
+	public CacheService(PersistenceStore persistenceStore, List<Region> regions) {
+		this.persistenceStore = persistenceStore;
 		for (Region region : regions) {
 			caches.put(region.getName(), new Cache(region, index));
+			statistics.put(region.getName(), new CachiusStatistics(region, this));
 		}
 	}
-	
-	public CachiusStatistics getStatistics() {
+
+	public void setDisableCache(boolean disableCache) {
+		this.disableCache = disableCache;
+	}
+
+	public Map<String, CachiusStatistics> getStatistics() {
+		return statistics;
+	}
+
+	public CachiusStatistics getStatistics(String region) {
+		CachiusStatistics stats = statistics.get(region != null ? region : "default");
+		if (stats == null) {
+			throw new IllegalArgumentException("No such statistics region: " + region);
+		}
 		return stats;
 	}	
 
 	public Cache getCache(String region) {
-		if (region == null) {
-			region = "default";
-		}
-		Cache cache = caches.get(region);
+		Cache cache = caches.get(region != null ? region : "default");
 		if (cache == null) {
 			throw new IllegalArgumentException("No such cache region: " + region);
 		}
@@ -62,6 +73,9 @@ public class CacheService {
 	}
 
 	private CacheEntry getCacheEntry(CacheHandler handler) {
+		if (disableCache) {
+			return null;
+		}
 		CacheEntry entry = null;
 		String cacheKey = handler.getCacheKey();
 		if (cacheKey != null) {
@@ -89,6 +103,7 @@ public class CacheService {
         }
         else {
         	CacheItem item = entry.getItem();
+    		CachiusStatistics stats = getStatistics(handler.getCacheRegion());
         	if (item.isUpToDate(handler)) {
         		stats.addHit();
         		log.debug("Serving cached content: {}", entry.getKey());
@@ -111,6 +126,8 @@ public class CacheService {
     		blockingCapture(entry, handler);
     	}
     	long t2 = System.currentTimeMillis();
+
+    	CachiusStatistics stats = getStatistics(handler.getCacheRegion());
     	stats.itemUpdated(item, t2 - t1);
     }
 	
@@ -140,7 +157,7 @@ public class CacheService {
 			}
 		}
 		
-		log.debug("Updating {} (non-blocking)", entry.getKey());
+		log.debug("Updating (non-blocking): {}", entry.getKey());
 		
 		// Create a new CacheItem and capture the content ...
 		CacheItem newItem = new CacheItem(entry.getKey());
@@ -175,7 +192,7 @@ public class CacheService {
 			}
 			else {
 				// Item is stale and must be revalidated
-				log.debug("Updating {} (blocking)", entry.getKey());
+				log.debug("Updating (blocking): {}", entry.getKey());
 				CacheItem newItem = new CacheItem(entry.getKey());
 				updateInContext(handler, newItem);
 				replaceItemAndServeData(entry, handler, oldItem, newItem);
@@ -196,7 +213,7 @@ public class CacheService {
     	CacheItem parent = CacheContext.getItem();
     	try { 
 	    	CacheContext.setItem(newItem);
-			newItem.setData(handler.capture(diskStore));
+    		newItem.setData(handler.capture(persistenceStore));
     	}
     	finally {
     		CacheContext.setItem(parent);
@@ -248,7 +265,21 @@ public class CacheService {
         }
     }
 
+    public void invalidateRegion(String region) {
+		log.debug("Invalidating cached items for region '{}'", region);
+    	Cache cache = getCache(region);
+    	cache.invalidateAll();
+    }    
+
+    public void invalidateAllItems() {
+		log.debug("Invalidating all cached items");
+    	for (Cache cache : caches.values()) {
+    		cache.invalidateAll();
+    	}
+    }    
+
 	public void invalidateTaggedItems(String tag) {
+		log.debug("Invalidating cached items tagged with: {}", tag);
 		invalidator.invalidate(index, tag);
 	}
 
@@ -257,5 +288,5 @@ public class CacheService {
 			cache.destroy();
 		}
 	}
-    
+	
 }

@@ -1,17 +1,20 @@
-package org.riotfamily.cachius.persistence;
+package org.riotfamily.cachius.persistence.file;
 
 import java.io.File;
 import java.io.IOException;
 
-public class SimpleDiskStore implements DiskStore {
+import org.riotfamily.cachius.persistence.PersistenceItem;
+import org.riotfamily.cachius.persistence.PersistenceStore;
+
+public class SimpleDiskItemStore implements PersistenceStore {
 
 	private File dir;
 
-	public SimpleDiskStore() {
+	public SimpleDiskItemStore() {
 		setBaseDir(new File(System.getProperty("java.io.tmpdir")));
 	}
 	
-	public SimpleDiskStore(File dir) {
+	public SimpleDiskItemStore(File dir) {
 		setBaseDir(dir);
 	}
 	
@@ -33,6 +36,10 @@ public class SimpleDiskStore implements DiskStore {
 	
 	public File getFile() throws IOException {
 		return File.createTempFile("item", "", dir);
+	}
+
+	public PersistenceItem getItem() throws IOException {
+		return new FilePersistenceItem(getFile());
 	}
 	
 	

@@ -12,6 +12,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
  * Provides a ReadWriteLock to synchronize the access to the underlying 
  * CacheItem. Additionally it records when the item was accessed for the 
  * last time.
+ * 
+ * BVitez: Added hits & getItemSilent() for ServerStatsController()
  */
 public class CacheEntry implements Serializable, Comparable<CacheEntry> {
 	
@@ -23,6 +25,9 @@ public class CacheEntry implements Serializable, Comparable<CacheEntry> {
     
     /** Time of the last access */
     private long lastAccess;
+    
+    /** Hits */
+    private int hits;
     
     /** 
      * ReadWriteLock to prevent concurrent threads from updating
@@ -41,12 +46,19 @@ public class CacheEntry implements Serializable, Comparable<CacheEntry> {
     public String getKey() {
         return key;
     }
-	
+
     public CacheItem getItem() {
     	touch();
 		return item;
 	}
-    
+
+    /**
+     * Returns the CacheItem silently (without touching it)
+     */
+    public CacheItem getItemSilent() {
+		return item;
+	}
+
     public void setItem(CacheItem item) {
     	touch();
 		this.item = item;
@@ -64,6 +76,7 @@ public class CacheEntry implements Serializable, Comparable<CacheEntry> {
      */
     private void touch() {
     	this.lastAccess = System.currentTimeMillis();
+    	hits++;
     }
     
     /**
@@ -72,7 +85,14 @@ public class CacheEntry implements Serializable, Comparable<CacheEntry> {
 	public long getLastAccess() {
 		return this.lastAccess;
 	}
-		
+	
+    /**
+	 * Returns the number of hits.
+	 */
+	public int getHits() {
+		return this.hits;
+	}		
+	
 	protected void delete() {
     	WriteLock writeLock = lock.writeLock();
     	writeLock.lock();
@@ -121,4 +141,5 @@ public class CacheEntry implements Serializable, Comparable<CacheEntry> {
 		long l2 = that.lastAccess;
 		return (l1 < l2 ? -1 : (l1 == l2 ? 0 : 1));
 	}
+
 }

@@ -12,7 +12,7 @@
  */
 package org.riotfamily.statistics.domain;
 
-public class CacheRegionStatsItem extends StatsItem {
+public class HibernateCacheRegionStatsItem extends StatsItem {
 	
 	private Long elementsInMemory;
 	
@@ -26,7 +26,7 @@ public class CacheRegionStatsItem extends StatsItem {
 	
 	private Long kbInMemory;
 
-	public CacheRegionStatsItem(String name) {
+	public HibernateCacheRegionStatsItem(String name) {
 		super(name);
 	}
 	

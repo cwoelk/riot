@@ -14,22 +14,20 @@ package org.riotfamily.statistics.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.stat.SecondLevelCacheStatistics;
+import org.riotfamily.cachius.CacheService;
+import org.riotfamily.cachius.CachiusStatistics;
 import org.riotfamily.common.util.Generics;
 import org.riotfamily.statistics.domain.CachiusCacheRegionStatsItem;
-import org.riotfamily.statistics.domain.HibernateCacheRegionStatsItem;
 import org.riotfamily.statistics.domain.StatsItem;
 import org.springframework.dao.DataAccessException;
 
-public class HibernateCacheRegionDao extends AbstractStatsItemDao {
+public class CachiusCacheRegionDao extends AbstractCachiusStatisticsDao {
 
-	private SessionFactory sessionFactory;
-	
-	
-	public HibernateCacheRegionDao(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
+	public CachiusCacheRegionDao(CacheService cachius) {
+		super(cachius);
 	}
 
 	@Override
@@ -43,23 +41,28 @@ public class HibernateCacheRegionDao extends AbstractStatsItemDao {
 	
 	@Override
 	protected List<? extends StatsItem> getStats() {
-		ArrayList<HibernateCacheRegionStatsItem> stats = Generics.newArrayList();
-		String[] regions = sessionFactory.getStatistics().getSecondLevelCacheRegionNames();
+		ArrayList<CachiusCacheRegionStatsItem> stats = Generics.newArrayList();
+		
+		Map<String, CachiusStatistics> cachiusStatistics = getCachius().getStatistics();
+		Set<String> regions = cachiusStatistics.keySet();
 		for (String region : regions) {
-			HibernateCacheRegionStatsItem item = new HibernateCacheRegionStatsItem(region);
-			SecondLevelCacheStatistics sl = sessionFactory.getStatistics().getSecondLevelCacheStatistics(region);
-			item.setElementsInMemory(sl.getElementCountInMemory());
-			item.setElementsOnDisk(sl.getElementCountOnDisk());
-			item.setHitCount(sl.getHitCount());
-			item.setMissCount(sl.getMissCount());
-			item.setPutCount(sl.getPutCount());
-			item.setKbInMemory(sl.getSizeInMemory() / 1024);
+			CachiusCacheRegionStatsItem item = new CachiusCacheRegionStatsItem(region);
+			CachiusStatistics statistics = cachiusStatistics.get(region);
+			item.setCapacity(statistics.getCapacity());
+			item.setSize(statistics.getSize());
+			item.setHits(statistics.getHits());
+			item.setMisses(statistics.getMisses());
+			item.setMaxUpdateTime(statistics.getMaxUpdateTime());
+			item.setSlowestUpdate(statistics.getSlowestUpdate());
+			item.setAverageOverflowInterval(statistics.getAverageOverflowInterval());
 			stats.add(item);
 		}
+		
 		return stats;
 	}
 	
 	public Object load(String id) throws DataAccessException {
 		return new CachiusCacheRegionStatsItem(id);
 	}
+
 }

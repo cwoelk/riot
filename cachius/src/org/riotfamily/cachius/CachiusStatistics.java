@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class CachiusStatistics {
 
+	private Region region;
+	
 	private CacheService service;
 
 	private volatile long maxUpdateTime;
@@ -37,7 +39,8 @@ public class CachiusStatistics {
 	
 	private AtomicLong misses = new AtomicLong();
 	
-	protected CachiusStatistics(CacheService service) {
+	protected CachiusStatistics(Region region, CacheService service) {
+		this.region = region;
 		this.service = service;
 	}
 	
@@ -63,7 +66,7 @@ public class CachiusStatistics {
 		slowestUpdate = null;
 		hits.set(0);
 		misses.set(0);
-		//service.getCache(null).resetOverflowStats();
+		region.resetOverflowStats();
 	}
 	
 	public long getMaxUpdateTime() {
@@ -83,23 +86,21 @@ public class CachiusStatistics {
 	}
 	
 	public int getCapacity() {
-		return service.getCache(null).getRegion().getCapacity();
+		return region.getCapacity();
 	}
     
     public int getSize() {
-    	return service.getCache(null).getSize(); 
+    	return service.getCache(region.getName()).getSize(); 
     }
-    
-    public void invalidateAllItems() {
-    	service.getCache(null).invalidateAll();
-    }    
-    
-    /*public long getAverageOverflowInterval() {
-		return service.getCache(null).getAverageOverflowInterval();
+        
+    public long getAverageOverflowInterval() {
+		return region.getAverageOverflowInterval();
 	}
     
+    /*
     public long getMaxInvalidationTime() {
-		return service.getCache(null).getMaxInvalidationTime();
-	}*/
+		return service.getCache(region).getMaxInvalidationTime();
+	}
+	*/
 
 }

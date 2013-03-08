@@ -37,6 +37,10 @@
 				<value>text/xml xml</value>
 				<value>text/javascript js</value>
 				<value>image/png png</value>
+				<value>image/gif gif</value>
+				<value>image/jpeg jpe</value>
+				<value>image/jpeg jpeg</value>
+				<value>image/jpeg jpg</value>
 			</list>
 		</property>
 	</bean>

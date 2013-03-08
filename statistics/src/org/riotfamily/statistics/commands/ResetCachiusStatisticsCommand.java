@@ -23,12 +23,17 @@
  * ***** END LICENSE BLOCK ***** */
 package org.riotfamily.statistics.commands;
 
+import java.util.Set;
+
+import org.riotfamily.common.util.Generics;
 import org.riotfamily.core.screen.list.command.CommandContext;
 import org.riotfamily.core.screen.list.command.CommandResult;
 import org.riotfamily.core.screen.list.command.Selection;
+import org.riotfamily.core.screen.list.command.SelectionItem;
 import org.riotfamily.core.screen.list.command.impl.support.AbstractCommand;
 import org.riotfamily.core.screen.list.command.result.RefreshListResult;
-import org.riotfamily.statistics.dao.CachiusStatisticsDao;
+import org.riotfamily.statistics.dao.AbstractCachiusStatisticsDao;
+import org.riotfamily.statistics.domain.CachiusCacheRegionStatsItem;
 
 public class ResetCachiusStatisticsCommand extends AbstractCommand {
 	
@@ -40,8 +45,24 @@ public class ResetCachiusStatisticsCommand extends AbstractCommand {
 	public CommandResult execute(CommandContext context, Selection selection)
 			throws Exception {
 		
-		CachiusStatisticsDao dao = (CachiusStatisticsDao) context.getScreenContext().getDao();
-		dao.getCachiusStatistics().reset();
+		AbstractCachiusStatisticsDao dao = (AbstractCachiusStatisticsDao) context.getScreenContext().getDao();
+		Set<String> regions;
+		
+		if (selection.size() == 0) {
+			 regions = dao.getCachius().getStatistics().keySet();			
+		}
+		else {
+			regions = Generics.newHashSet();
+			for (SelectionItem item : selection) {
+				CachiusCacheRegionStatsItem crs = (CachiusCacheRegionStatsItem) item.getObject();
+				regions.add(crs.getName());
+			}
+		}
+		
+		for (String region : regions) {
+			dao.getCachius().getStatistics(region).reset();
+		}
+		
 		return new RefreshListResult();
 	}
 

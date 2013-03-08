@@ -53,9 +53,13 @@ public class Region {
 		logOverflow();
 		return (int) Math.ceil(capacity * evictionFactor);
 	}
+
+	protected long getAverageOverflowInterval() {
+		return averageOverflowInterval;
+	}
 	
-	public void logOverflow() {
-		log.info("Cache capacity exceeded. Performing cleanup ...");
+	protected void logOverflow() {
+		log.info("Cache capacity for region '{}' exceeded. Performing cleanup ...", name);
 		long timeSinceLastOverflow = System.currentTimeMillis() - lastOverflow;
 		if (averageOverflowInterval == 0) {
 			averageOverflowInterval = timeSinceLastOverflow;
@@ -63,5 +67,12 @@ public class Region {
 		else {
 			averageOverflowInterval = (averageOverflowInterval + timeSinceLastOverflow) / 2;
 		}
+    	lastOverflow = System.currentTimeMillis();
 	}
+
+	protected void resetOverflowStats() {
+    	lastOverflow = System.currentTimeMillis();
+    	averageOverflowInterval = 0;
+	}
+
 }

@@ -23,35 +23,80 @@
  * ***** END LICENSE BLOCK ***** */
 package org.riotfamily.statistics.dao;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.riotfamily.cachius.CacheService;
 import org.riotfamily.cachius.CachiusStatistics;
 import org.riotfamily.statistics.domain.Statistics;
-import org.springframework.beans.factory.annotation.Required;
+import org.riotfamily.statistics.domain.StatsItem;
+import org.springframework.util.StringUtils;
 
-public class CachiusStatisticsDao extends AbstractSimpleStatsDao {
+public class CachiusStatisticsDao extends AbstractCachiusStatisticsDao {
 
-	private CachiusStatistics cachius;
-
-	@Required
-	public void setCacheService(CacheService service) {
-		this.cachius = service.getStatistics();
+	public CachiusStatisticsDao(CacheService cachius) {
+		super(cachius);
 	}
-	
-	public CachiusStatistics getCachiusStatistics() {
-		return cachius;
-	}
-	
+
 	@Override
-	protected void populateStats(Statistics stats) throws Exception {
-		stats.add("Capacity", cachius.getCapacity());
-		stats.add("Cached items", cachius.getSize());
-		//stats.addMillis("Average overflow interval", cachius.getAverageOverflowInterval());
-		//stats.add("Max invalidation time [ms]", cachius.getMaxInvalidationTime());
-		
-		stats.add("Hits", cachius.getHits());
-		stats.add("Misses", cachius.getMisses());
-		
-		stats.add("Max update time [ms]", cachius.getMaxUpdateTime());
-		stats.add("Slowest update", cachius.getSlowestUpdate());
+	protected List<? extends StatsItem> getStats() throws Exception {
+		Statistics stats = new Statistics();
+		populateStats(stats);
+		return stats.getItems();
 	}
+
+	protected void populateStats(Statistics stats) throws Exception {
+		int totalCapacity = 0;
+		int totalSize = 0; 
+		long totalHits = 0; 
+		long totalMisses = 0; 
+		
+		long maxUpdateTime = 0;
+		String slowestUpdate = "";
+		String slowestUpdateRegion = "";
+		
+		long averageOverflowInterval = 0;
+		String averageOverflowRegion = "";
+		
+		Map<String, CachiusStatistics> cachiusStatistics = getCachius().getStatistics();
+		Set<String> regions = cachiusStatistics.keySet();
+		for (String region : regions) {
+			CachiusStatistics statistics = cachiusStatistics.get(region);
+			totalCapacity += statistics.getCapacity();
+			totalSize += statistics.getSize();
+			totalHits += statistics.getHits();
+			totalMisses += statistics.getMisses();
+			if (statistics.getMaxUpdateTime() > maxUpdateTime) {
+				maxUpdateTime = statistics.getMaxUpdateTime();
+				slowestUpdate = statistics.getSlowestUpdate();
+				slowestUpdateRegion = region;
+			}
+			
+			if (statistics.getAverageOverflowInterval() > 0 &&
+					(averageOverflowInterval == 0 ||
+						averageOverflowInterval > statistics.getAverageOverflowInterval())) {
+				
+				averageOverflowInterval = statistics.getAverageOverflowInterval();
+				averageOverflowRegion = region;
+			}
+			
+		}
+		
+		stats.add("Total Capacity", totalCapacity);
+		stats.add("Total Cached items", totalSize);
+		stats.add("Total Hits", totalHits);
+		stats.add("Total Misses", totalMisses);
+		
+		if (StringUtils.hasText(slowestUpdateRegion)) {
+			stats.add(String.format("Max update time [ms] in region '%s'", slowestUpdateRegion), maxUpdateTime);
+			stats.add(String.format("Slowest update in region '%s'", slowestUpdateRegion), slowestUpdate);
+		}
+		
+		if (StringUtils.hasText(averageOverflowRegion)) {
+			stats.add(String.format("Smallest average overflow interval [ms] in region '%s'", averageOverflowRegion), averageOverflowInterval);
+		}
+		
+	}
+
 }

@@ -13,8 +13,6 @@
 package org.riotfamily.cachius.http;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -35,9 +33,10 @@ import org.riotfamily.cachius.http.header.SessionIdCookie;
 import org.riotfamily.cachius.http.header.StaticCookie;
 import org.riotfamily.cachius.http.support.DelegatingServletOutputStream;
 import org.riotfamily.cachius.http.support.ScanWriter;
-import org.riotfamily.cachius.http.support.SessionIdEncoder;
 import org.riotfamily.cachius.http.support.ScanWriter.Block;
-import org.riotfamily.cachius.persistence.DiskStore;
+import org.riotfamily.cachius.http.support.SessionIdEncoder;
+import org.riotfamily.cachius.persistence.PersistenceItem;
+import org.riotfamily.cachius.persistence.PersistenceStore;
 
 
 /**
@@ -58,7 +57,7 @@ public class CachiusResponse implements HttpServletResponse {
     
     private Directives directives;
     
-    private DiskStore diskStore;
+    private PersistenceStore persistenceStore;
     
     private ServletOutputStream outputStream;
     
@@ -66,19 +65,19 @@ public class CachiusResponse implements HttpServletResponse {
     
     private ScanWriter scanWriter;
     
-    private File file;
+    private PersistenceItem persistenceItem;
 
-    public CachiusResponse(ResponseData data, DiskStore diskStore, 
+    public CachiusResponse(ResponseData data, PersistenceStore persistenceStore, 
     		SessionIdEncoder sessionIdEncoder, boolean compressible,
     		int gzipThreshold, Directives directives) throws IOException {
     	
     	this.data = data;
-    	this.diskStore = diskStore;
+    	this.persistenceStore = persistenceStore;
     	this.sessionIdEncoder = sessionIdEncoder;
     	this.compressible = compressible;
     	this.gzipThreshold = gzipThreshold;
         this.directives = directives;
-        this.file = diskStore.getFile();
+        this.persistenceItem = persistenceStore.getItem();
     }
 	
     public int getStatus() {
@@ -170,7 +169,7 @@ public class CachiusResponse implements HttpServletResponse {
         }
         if (outputStream == null) {
         		outputStream = new DelegatingServletOutputStream(
-        				new BufferedOutputStream(new FileOutputStream(file)));
+        				new BufferedOutputStream(persistenceItem.getOutputStream()));
         }
         return outputStream;
     }
@@ -188,7 +187,8 @@ public class CachiusResponse implements HttpServletResponse {
             if (outputStream != null) {
                 throw new IllegalStateException();
             }
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+            OutputStream out = new BufferedOutputStream(persistenceItem.getOutputStream());
+            
             scanWriter = directives.createWriter(new OutputStreamWriter(out, "UTF-8"));
 	        writer = new PrintWriter(scanWriter);
 	    }
@@ -208,7 +208,7 @@ public class CachiusResponse implements HttpServletResponse {
     	flushBuffer();
     	resetBuffer();
     	if (isChunked()) {
-    		ChunkedContent content = new ChunkedContent(file);
+    		ChunkedContent content = new ChunkedContent(persistenceItem);
     		for (Block block : scanWriter.getBlocks()) {
     			ContentFragment fragment = directives.parse(block.getValue());
     			if (fragment != null) {
@@ -219,13 +219,13 @@ public class CachiusResponse implements HttpServletResponse {
     		data.setContent(content);
     	}
     	else if (isGzip()) {
-			data.setContent(new GzipContent(file, diskStore.getFile()));
+			data.setContent(new GzipContent(persistenceItem, persistenceStore.getItem()));
     	}
     	else if (isCharacter()) {
-    		data.setContent(new CharacterContent(file));
+    		data.setContent(new CharacterContent(persistenceItem));
     	}	
     	else {
-    		data.setContent(new BinaryContent(file));
+    		data.setContent(new BinaryContent(persistenceItem));
     	}
     }
     
@@ -238,7 +238,7 @@ public class CachiusResponse implements HttpServletResponse {
 	}
 	
 	private boolean isGzip() {
-		return compressible && file.length() > gzipThreshold;
+		return compressible && persistenceItem.size() > gzipThreshold;
 	}
 
     /**

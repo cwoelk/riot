@@ -106,7 +106,7 @@ public class ResponseData implements Serializable, Deleteable {
 	public void setContent(Content content) {
 		this.content = content;
 	}
-
+	
 	public void serve(HttpServletRequest request, HttpServletResponse response) 
 			throws IOException, ServletException {
 		

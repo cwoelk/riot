@@ -53,7 +53,7 @@
 			<property name="property" value="value" />
 		</bean>
 	</util:list>
- 	
+ 
  	<override:add ref="systemScreens">
 		<s:group id="systemStatistics" icon="chart_curve">
 			<s:group id="properties">
@@ -260,22 +260,46 @@
 					</s:commands>
 				</s:list>
 			</s:group>
-			<s:list id="cachiusStatistics" icon="server_database">
-				<s:dao>
-					<bean class="org.riotfamily.statistics.dao.CachiusStatisticsDao">
-						<property name="cacheService" ref="cacheService" />
-					</bean>
-				</s:dao>
-				<s:columns>
-					<s:column property="name" />
-					<s:column property="value" />
-				</s:columns>
-				<s:commands>
-					<bean class="org.riotfamily.statistics.commands.RefreshListCommand" />
-					<bean class="org.riotfamily.statistics.commands.ResetCachiusStatisticsCommand" />
-					<bean class="org.riotfamily.statistics.commands.InvalidateCachiusCacheCommand" />
-				</s:commands>
-			</s:list>
+			<s:group id="cachiusStatistics">
+				<s:list id="cachiusCommonStatistics" icon="server_database">
+					<s:dao>
+						<bean class="org.riotfamily.statistics.dao.CachiusStatisticsDao">
+	        				<constructor-arg ref="cacheService" />
+						</bean>
+					</s:dao>
+					<s:columns>
+						<s:column property="name" />
+						<s:column property="value" />
+					</s:columns>
+					<s:commands>
+						<bean class="org.riotfamily.statistics.commands.RefreshListCommand" />
+						<bean class="org.riotfamily.statistics.commands.ResetCachiusStatisticsCommand" />
+						<bean class="org.riotfamily.statistics.commands.InvalidateCachiusCacheCommand" />
+					</s:commands>
+				</s:list>
+				<s:list id="cachiusCacheRegions" icon="map">
+					<s:dao>
+						<bean class="org.riotfamily.statistics.dao.CachiusCacheRegionDao">
+	        				<constructor-arg ref="cacheService" />
+	        			</bean>
+					</s:dao>
+					<s:columns>
+						<s:column property="name" />
+						<s:column property="capacity" />
+						<s:column property="size" />
+						<s:column property="hits" />
+						<s:column property="misses" />
+						<s:column property="averageOverflowInterval" />
+						<s:column property="maxUpdateTime" />
+						<s:column property="slowestUpdate" />
+					</s:columns>
+					<s:commands>
+						<bean class="org.riotfamily.statistics.commands.RefreshListCommand" />
+						<bean class="org.riotfamily.statistics.commands.ResetCachiusStatisticsCommand" />
+						<bean class="org.riotfamily.statistics.commands.InvalidateCachiusCacheCommand" />
+					</s:commands>
+				</s:list>
+			</s:group>
 		</s:group>
 	</override:add>
     

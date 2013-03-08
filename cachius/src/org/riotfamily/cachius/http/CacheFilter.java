@@ -12,11 +12,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.riotfamily.cachius.CacheService;
-import org.riotfamily.cachius.persistence.SimpleDiskStore;
+import org.riotfamily.cachius.persistence.file.SimpleDiskItemStore;
 
 public class CacheFilter implements Filter {
 
-	private CacheService cacheService = new CacheService(new SimpleDiskStore());
+	private CacheService cacheService = new CacheService(new SimpleDiskItemStore());
 	
 	public void init(FilterConfig config) throws ServletException {
 	}

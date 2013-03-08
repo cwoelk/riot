@@ -1,8 +1,6 @@
 package org.riotfamily.cachius.http.content;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -16,18 +14,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.riotfamily.cachius.CacheContext;
 import org.riotfamily.cachius.http.support.IOUtils;
+import org.riotfamily.cachius.persistence.PersistenceItem;
 
 
 public class ChunkedContent implements Content {
 
-	private File file;
+	private PersistenceItem persistenceItem;
 	
 	private List<Chunk> chunks = new LinkedList<Chunk>();
 	
 	private transient int lastEnd = -1;
 	
-	public ChunkedContent(File file) {
-		this.file = file;
+	public ChunkedContent(PersistenceItem persistenceItem) {
+		this.persistenceItem = persistenceItem;
 	}
 	
 	public void addFragment(int start, int end, ContentFragment fragment) {
@@ -40,7 +39,7 @@ public class ChunkedContent implements Content {
 	}
 	
 	public void addTail() {
-		int gap = ((int) file.length()) - (lastEnd + 1);
+		int gap = persistenceItem.size() - (lastEnd + 1);
 		if (gap > 0) {
 			chunks.add(new Chunk(gap));
 		}
@@ -64,7 +63,7 @@ public class ChunkedContent implements Content {
 			throws ServletException, IOException {
 		
 		Reader reader = new BufferedReader(new InputStreamReader(
-				new FileInputStream(file), "UTF-8"));
+				persistenceItem.getInputStream(), "UTF-8"));
 		
 		try {
 			if (chunks != null) {
@@ -79,7 +78,7 @@ public class ChunkedContent implements Content {
 	}
 	
 	public void delete() {
-		file.delete();
+		persistenceItem.delete();
 	}
 			
 	private static class Chunk implements Serializable {

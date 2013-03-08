@@ -89,7 +89,7 @@
 			A Cachius CacheService instance to cache and serve content.		
 		</description>
         <constructor-arg>
-        	<bean class="org.riotfamily.cachius.persistence.SimpleDiskStore" />
+        	<bean class="org.riotfamily.cachius.persistence.file.SimpleDiskItemStore" />
         </constructor-arg>
         <constructor-arg ref="cacheRegions" />
     </bean>

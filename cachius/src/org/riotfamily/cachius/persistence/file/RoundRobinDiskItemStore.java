@@ -10,12 +10,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.riotfamily.cachius.persistence;
+package org.riotfamily.cachius.persistence.file;
 
 import java.io.File;
 import java.io.IOException;
 
-public class RoundRobinDiskStore implements DiskStore {
+import org.riotfamily.cachius.persistence.PersistenceItem;
+import org.riotfamily.cachius.persistence.PersistenceStore;
+
+public class RoundRobinDiskItemStore implements PersistenceStore {
 
 	private File baseDir;
 	
@@ -25,7 +28,7 @@ public class RoundRobinDiskStore implements DiskStore {
 	
 	private int maxFilesPerDir = 500;
 	
-	public RoundRobinDiskStore(File baseDir, int depth) {
+	public RoundRobinDiskItemStore(File baseDir, int depth) {
 		setBaseDir(baseDir);
 		setDepth(depth);
 	}
@@ -59,7 +62,11 @@ public class RoundRobinDiskStore implements DiskStore {
 		this.maxFilesPerDir = maxFilesPerDir;
 	}
 
-	public synchronized File getFile() throws IOException {
+	public PersistenceItem getItem() throws IOException {
+		return new FilePersistenceItem(getFile());
+	}
+
+	private synchronized File getFile() throws IOException {
 		File f = null;
 		while (f == null) {
 			f = createFile();

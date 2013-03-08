@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.riotfamily.cachius.CacheHandler;
 import org.riotfamily.cachius.http.content.Directives;
 import org.riotfamily.cachius.http.support.SessionIdEncoder;
-import org.riotfamily.cachius.persistence.DiskStore;
+import org.riotfamily.cachius.persistence.PersistenceStore;
 
 public abstract class AbstractHttpHandler implements CacheHandler {
 
@@ -68,10 +68,10 @@ public abstract class AbstractHttpHandler implements CacheHandler {
 		data.serve(request, response);
 	}
 
-	public Serializable capture(DiskStore diskStore) throws Exception {
+	public Serializable capture(PersistenceStore persistenceStore) throws Exception {
 		ResponseData data = new ResponseData(response.getCharacterEncoding());
 		SessionIdEncoder sessionIdEncoder = new SessionIdEncoder(request);
-		CachiusResponse cachiusResponse = new CachiusResponse(data, diskStore, 
+		CachiusResponse cachiusResponse = new CachiusResponse(data, persistenceStore, 
 				sessionIdEncoder, isCompressible(), gzipThreshold , directives);
 		
 		handleRequest(request, cachiusResponse);

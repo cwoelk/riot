@@ -14,8 +14,8 @@ package org.riotfamily.statistics.commands;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cache.entry.CacheEntry;
@@ -24,15 +24,15 @@ import org.riotfamily.common.util.Generics;
 import org.riotfamily.core.screen.list.command.CommandContext;
 import org.riotfamily.core.screen.list.command.Selection;
 import org.riotfamily.core.screen.list.command.SelectionItem;
-import org.riotfamily.statistics.domain.CacheRegionStatsItem;
+import org.riotfamily.statistics.domain.HibernateCacheRegionStatsItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClearCacheRegionCommand extends AbstractHibernateCacheCommand {
+public class ClearHibernateCacheRegionCommand extends AbstractHibernateCacheCommand {
 
-	private Logger log = LoggerFactory.getLogger(ClearCacheRegionCommand.class);
+	private Logger log = LoggerFactory.getLogger(ClearHibernateCacheRegionCommand.class);
 	
-	public ClearCacheRegionCommand(SessionFactory sessionFactory) {
+	public ClearHibernateCacheRegionCommand(SessionFactory sessionFactory) {
 		super(sessionFactory);
 	}
 
@@ -44,7 +44,7 @@ public class ClearCacheRegionCommand extends AbstractHibernateCacheCommand {
 	@Override
 	public void doExecute(CommandContext context, Selection selection) {
 		for (SelectionItem item : selection) {
-			CacheRegionStatsItem crs = (CacheRegionStatsItem) item.getObject();
+			HibernateCacheRegionStatsItem crs = (HibernateCacheRegionStatsItem) item.getObject();
 			clearHibernateCacheRegion(crs.getName());	
 		}
 	}

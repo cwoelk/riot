@@ -40,9 +40,7 @@ public class IOUtils {
 	 * @return the number of bytes copied
 	 * @throws IOException in case of I/O errors
 	 */
-	public static int copy(InputStream in, OutputStream out) 
-			throws IOException {
-		
+	public static int copy(InputStream in, OutputStream out) throws IOException {
 		try {
 			int byteCount = 0;
 			byte[] buffer = new byte[BUFFER_SIZE];
@@ -65,9 +63,7 @@ public class IOUtils {
 	 * 
 	 * @see #copy(InputStream, OutputStream)
 	 */
-	public static int serve(InputStream in, OutputStream out) 
-			throws IOException {
-	
+	public static int serve(InputStream in, OutputStream out) throws IOException {
 		try {
 			return copy(in, out);
 		}
@@ -172,9 +168,7 @@ public class IOUtils {
 	 * 
 	 * @see #copy(Reader, Writer)
 	 */
-	public static int copy(InputStream in, Writer out, String encoding) 
-			throws IOException {
-		
+	public static int copy(InputStream in, Writer out, String encoding) throws IOException {
 		try {
 			return copy(new InputStreamReader(in, encoding), out);
 		}
@@ -189,9 +183,7 @@ public class IOUtils {
 	 * 
 	 * @see #copy(InputStream, Writer, String)
 	 */
-	public static int serve(InputStream in, Writer out, String encoding) 
-			throws IOException {
-
+	public static int serve(InputStream in, Writer out, String encoding) throws IOException {
 		try {
 			return copy(in, out, encoding);
 		}
@@ -210,11 +202,8 @@ public class IOUtils {
 	 * 
 	 * @see #copy(InputStream, Writer, String)
 	 */
-	public static int copy(File file, Writer out, String encoding) 
-			throws IOException {
-		
-		return copy(new BufferedInputStream(new FileInputStream(file)), 
-				out, encoding);
+	public static int copy(File file, Writer out, String encoding) throws IOException {
+		return copy(new BufferedInputStream(new FileInputStream(file)), out, encoding);
 	}
 	
 	/**
@@ -223,9 +212,7 @@ public class IOUtils {
 	 * 
 	 * @see #copy(File, Writer, String)
 	 */
-	public static int serve(File file, Writer out, String encoding) 
-			throws IOException {
-
+	public static int serve(File file, Writer out, String encoding) throws IOException {
 		try {
 			return copy(file, out, encoding);
 		}

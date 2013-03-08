@@ -13,9 +13,6 @@
 package org.riotfamily.cachius.http.content;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.riotfamily.cachius.http.support.IOUtils;
+import org.riotfamily.cachius.persistence.PersistenceItem;
 
 
 public class GzipContent extends BinaryContent {
@@ -39,14 +37,15 @@ public class GzipContent extends BinaryContent {
 	private static Pattern BUGGY_NETSCAPE_PATTERN = 
 			Pattern.compile("^Mozilla/4\\.0[678]");
 
-
-	private File zipFile;
+	private PersistenceItem zipItem;
 	
-	public GzipContent(File file, File zipFile) throws IOException {
-		super(file);
-		this.zipFile = zipFile;
-		InputStream in = new BufferedInputStream(new FileInputStream(file));
-    	OutputStream out = new GZIPOutputStream(new FileOutputStream(zipFile));
+	public GzipContent(PersistenceItem item, PersistenceItem zipItem) throws IOException {
+		super(item);
+		this.zipItem = zipItem;
+		
+		InputStream in = new BufferedInputStream(item.getInputStream());
+    	OutputStream out = new GZIPOutputStream(zipItem.getOutputStream());
+
     	IOUtils.copy(in, out);
     	IOUtils.closeStream(out);
 	}
@@ -56,7 +55,7 @@ public class GzipContent extends BinaryContent {
 			HttpServletResponse response) {
 		
 		if (responseCanBeZipped(request)) {
-			return (int) zipFile.length();
+			return zipItem.size();
 		}
 		return super.getLength(request, response);
 	}
@@ -78,13 +77,13 @@ public class GzipContent extends BinaryContent {
 			HttpServletResponse response) throws IOException {
 		
 		response.setHeader("Content-Encoding", "gzip");
-		IOUtils.serve(zipFile, response.getOutputStream());	
+		IOUtils.serve(zipItem.getInputStream(), response.getOutputStream());	
 	}
 	
 	@Override
 	public void delete() {
 		super.delete();
-		zipFile.delete();
+		zipItem.delete();
 	}
 
 	/**
@@ -103,9 +102,8 @@ public class GzipContent extends BinaryContent {
 	/**
 	 * Returns whether the Accept-Encoding header contains "gzip".
 	 */
-	@SuppressWarnings("unchecked")
 	protected boolean clientAcceptsGzip(HttpServletRequest request) {
-		Enumeration values = request.getHeaders("Accept-Encoding");
+		Enumeration<?> values = request.getHeaders("Accept-Encoding");
 		if (values != null) {
 			while (values.hasMoreElements()) {
 				String value = (String) values.nextElement();
@@ -148,4 +146,5 @@ public class GzipContent extends BinaryContent {
 		}
 		return BUGGY_NETSCAPE_PATTERN.matcher(ua).find();
 	}
+
 }
